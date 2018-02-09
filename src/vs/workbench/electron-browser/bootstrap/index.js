@@ -7,7 +7,7 @@
 
 'use strict';
 
-/*global window,document,define*/
+/*global window,document,define,Monaco_Loader_Init*/
 
 const perf = require('../../../base/common/performance');
 perf.mark('renderer/started');
@@ -202,9 +202,14 @@ function main() {
 	}
 
 	// Load the loader and start loading the workbench
-	const loaderFilename = configuration.appRoot + '/out/vs/loader.js';
-	const loaderSource = require('fs').readFileSync(loaderFilename);
-	require('vm').runInThisContext(loaderSource, { filename: loaderFilename });
+	if (typeof Monaco_Loader_Init === 'function') {
+		// There has been a snapshot
+		var define = Monaco_Loader_Init().define;
+	} else {
+		const loaderFilename = configuration.appRoot + '/out/vs/loader.js';
+		const loaderSource = require('fs').readFileSync(loaderFilename);
+		require('vm').runInThisContext(loaderSource, { filename: loaderFilename });
+	}
 
 	window.nodeRequire = require.__$__nodeRequire;
 
