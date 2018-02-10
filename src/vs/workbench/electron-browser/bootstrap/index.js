@@ -201,14 +201,18 @@ function main() {
 		webFrame.setZoomLevel(zoomLevel);
 	}
 
+	var define = null;
+
 	// Load the loader and start loading the workbench
 	if (typeof Monaco_Loader_Init === 'function') {
 		// There has been a snapshot
-		var define = Monaco_Loader_Init().define;
+		define = Monaco_Loader_Init().define;
 	} else {
 		const loaderFilename = configuration.appRoot + '/out/vs/loader.js';
 		const loaderSource = require('fs').readFileSync(loaderFilename);
 		require('vm').runInThisContext(loaderSource, { filename: loaderFilename });
+		define = global.define;
+		global.define = undefined;
 	}
 
 	window.nodeRequire = require.__$__nodeRequire;

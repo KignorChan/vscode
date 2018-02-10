@@ -1690,6 +1690,7 @@ var AMDLoader;
         define = function () {
             return DefineFunc.apply(null, arguments);
         };
+        define.amd = DefineFunc.amd;
         if (typeof doNotInitLoader === 'undefined') {
             init();
         }

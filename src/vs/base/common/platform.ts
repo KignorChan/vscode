@@ -5,6 +5,7 @@
 'use strict';
 
 declare var MonacoSnapshotPlatform: 'win32' | 'darwin' | 'linux';
+declare var MonacoSnapshotGlobal: any;
 
 let _isWindows = false;
 let _isMacintosh = false;
@@ -125,7 +126,12 @@ export const locale = _locale;
  */
 export const translationsConfigFile = _translationsConfigFile;
 
-const _globals = (typeof self === 'object' ? self : typeof global === 'object' ? global : {} as any);
+const _globals = (
+	typeof self === 'object' ? self :
+		typeof global === 'object' ? global :
+			typeof MonacoSnapshotGlobal !== 'undefined' ? MonacoSnapshotGlobal :
+				{} as any
+);
 export const globals: any = _globals;
 
 export const enum OperatingSystem {
