@@ -24,6 +24,7 @@ import { AutoSaveContext } from 'vs/workbench/services/textfile/common/textfiles
 import { ResourceContextKey } from 'vs/workbench/common/resources';
 import { WorkbenchListDoubleSelection } from 'vs/platform/list/browser/listService';
 import URI from 'vs/base/common/uri';
+import { Schemas } from 'vs/base/common/network';
 
 // Contribute Global Actions
 const category = nls.localize('filesCategory', "File");
@@ -101,7 +102,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 
 // Editor Title Context Menu
-appendEditorTitleContextMenuItem(REVEAL_IN_OS_COMMAND_ID, REVEAL_IN_OS_LABEL, ResourceContextKey.Scheme.isEqualTo('file'));
+appendEditorTitleContextMenuItem(REVEAL_IN_OS_COMMAND_ID, REVEAL_IN_OS_LABEL, ResourceContextKey.Scheme.isEqualTo(Schemas.file));
 appendEditorTitleContextMenuItem(COPY_PATH_COMMAND_ID, CopyPathAction.LABEL, ResourceContextKey.IsFile);
 appendEditorTitleContextMenuItem(REVEAL_IN_EXPLORER_COMMAND_ID, nls.localize('revealInSideBar', "Reveal in Side Bar"), ResourceContextKey.IsFile);
 
@@ -186,7 +187,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 	group: 'navigation',
 	order: 20,
 	command: revealInOsCommand,
-	when: ResourceContextKey.Scheme.isEqualTo('file')
+	when: ResourceContextKey.Scheme.isEqualTo(Schemas.file)
 });
 
 const copyPathCommand = {
@@ -228,7 +229,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 		id: SAVE_FILE_AS_COMMAND_ID,
 		title: SAVE_FILE_AS_LABEL
 	},
-	when: ResourceContextKey.Scheme.isEqualTo('untitled')
+	when: ResourceContextKey.Scheme.isEqualTo(Schemas.untitled)
 });
 
 MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
@@ -355,7 +356,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	group: 'navigation',
 	order: 20,
 	command: revealInOsCommand,
-	when: ResourceContextKey.Scheme.isEqualTo('file')
+	when: ResourceContextKey.Scheme.isEqualTo(Schemas.file)
 });
 
 MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {

@@ -68,7 +68,7 @@ export class OpenEditorsView extends ViewsViewletPanel {
 		@ITextFileService private textFileService: ITextFileService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
 		@IEditorGroupService private editorGroupService: IEditorGroupService,
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
 		@IContextKeyService private contextKeyService: IContextKeyService,
@@ -79,7 +79,7 @@ export class OpenEditorsView extends ViewsViewletPanel {
 		super({
 			...(options as IViewOptions),
 			ariaHeaderLabel: nls.localize({ key: 'openEditosrSection', comment: ['Open is an adjective'] }, "Open Editors Section"),
-		}, keybindingService, contextMenuService);
+		}, keybindingService, contextMenuService, configurationService);
 
 		this.model = editorGroupService.getStacksModel();
 
@@ -396,7 +396,7 @@ export class OpenEditorsView extends ViewsViewletPanel {
 	}
 
 	private computeMinExpandedBodySize(visibleOpenEditors = OpenEditorsView.DEFAULT_VISIBLE_OPEN_EDITORS): number {
-		const itemsToShow = Math.min(Math.max(visibleOpenEditors, 1), this.elementCount);
+		const itemsToShow = Math.min(Math.max(visibleOpenEditors, 0), this.elementCount);
 		return itemsToShow * OpenEditorsDelegate.ITEM_HEIGHT;
 	}
 
@@ -544,16 +544,16 @@ class OpenEditorRenderer implements IRenderer<OpenEditor, IOpenEditorTemplateDat
 		editorTemplate.toDispose = [];
 
 		editorTemplate.toDispose.push(dom.addDisposableListener(container, dom.EventType.DRAG_START, (e: DragEvent) => {
+			const dragged = <OpenEditor[]>this.getSelectedElements().filter(e => e instanceof OpenEditor && !!e.getResource());
 
 			const dragImage = document.createElement('div');
 			e.dataTransfer.effectAllowed = 'copyMove';
 			dragImage.className = 'monaco-tree-drag-image';
-			dragImage.textContent = editorTemplate.openEditor.editor.getName();
+			dragImage.textContent = dragged.length === 1 ? editorTemplate.openEditor.editor.getName() : String(dragged.length);
 			document.body.appendChild(dragImage);
 			e.dataTransfer.setDragImage(dragImage, -10, -10);
 			setTimeout(() => document.body.removeChild(dragImage), 0);
 
-			const dragged = <OpenEditor[]>this.getSelectedElements().filter(e => e instanceof OpenEditor && !!e.getResource());
 			this.transfer.setData(dragged, OpenEditor.prototype);
 
 			if (editorTemplate.openEditor && editorTemplate.openEditor.editor) {

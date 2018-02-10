@@ -214,7 +214,7 @@ export interface MainThreadEditorsShape extends IDisposable {
 }
 
 export interface MainThreadTreeViewsShape extends IDisposable {
-	$registerView(treeViewId: string): void;
+	$registerTreeViewDataProvider(treeViewId: string): void;
 	$refresh(treeViewId: string, itemsToRefresh?: { [treeItemHandle: string]: ITreeItem }): void;
 }
 
@@ -518,8 +518,7 @@ export interface ExtHostDocumentsAndEditorsShape {
 }
 
 export interface ExtHostTreeViewsShape {
-	$getElements(treeViewId: string): TPromise<ITreeItem[]>;
-	$getChildren(treeViewId: string, treeItemHandle: string): TPromise<ITreeItem[]>;
+	$getChildren(treeViewId: string, treeItemHandle?: string): TPromise<ITreeItem[]>;
 }
 
 export interface ExtHostWorkspaceShape {
