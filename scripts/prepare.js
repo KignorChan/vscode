@@ -61,6 +61,27 @@ const CONTENTS = [
 	'vs/base/common/resources',
 	'vs/base/common/uuid',
 	'vs/base/common/winjs.base.raw',
+	'vs/base/common/winjs.base',
+	'vs/base/common/arrays',
+	'vs/base/common/cache',
+	'vs/base/common/errors',
+	'vs/base/common/event',
+	'vs/base/browser/browser',
+	'vs/base/browser/event',
+	'vs/base/browser/keyboardEvent',
+	'vs/base/browser/mouseEvent',
+	'vs/base/common/actions',
+	'vs/base/common/cancellation',
+	'vs/base/common/async',
+	'vs/base/browser/dom',
+	'vs/base/browser/fastDomNode',
+	'vs/base/browser/globalMouseMoveMonitor',
+	'vs/base/browser/touch',
+	'vs/base/browser/ui/list/rowCache',
+	'vs/base/browser/ui/widget',
+	'vs/base/browser/ui/scrollbar/scrollbarArrow',
+	'vs/base/common/glob',
+	'vs/base/common/htmlContent',
 ];
 
 let results = [];
@@ -91,6 +112,9 @@ var Monaco_LOG = [];
 	var doNotInitLoader = true;
 	var MonacoSnapshotPlatform = '${process.platform}';
 	var MonacoSnapshotGlobal = this;
+	var navigator = {
+		userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) code-oss-dev/1.21.0 Chrome/58.0.3029.110 Electron/1.7.9 Safari/537.36'
+	};
 	${file.toString()};
 	Monaco_Loader_Init = function() {
 		AMDLoader.init();
