@@ -7,7 +7,7 @@
 
 'use strict';
 
-/*global window,document,define,Monaco_Loader_Init*/
+/*global window,document,define,Monaco_Loader_Init,Monaco_CSS*/
 
 const perf = require('../../../base/common/performance');
 perf.mark('renderer/started');
@@ -246,11 +246,15 @@ function main() {
 	};
 
 	perf.mark('willLoadWorkbenchMain');
-	require([
+	var loadModules = [
 		'vs/workbench/workbench.main',
 		'vs/nls!vs/workbench/workbench.main',
 		'vs/css!vs/workbench/workbench.main'
-	], function () {
+	];
+	if (typeof Monaco_CSS !== 'undefined') {
+		loadModules = loadModules.concat(Monaco_CSS);
+	}
+	require(loadModules, function () {
 		perf.mark('didLoadWorkbenchMain');
 
 		process.lazyEnv.then(function () {

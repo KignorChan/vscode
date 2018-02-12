@@ -44,7 +44,14 @@ declare let self: any;
 export const LANGUAGE_DEFAULT = 'en';
 
 // OS detection
-if (typeof process === 'object') {
+if (typeof MonacoSnapshotPlatform === 'string') {
+	_isWindows = (MonacoSnapshotPlatform === 'win32');
+	_isMacintosh = (MonacoSnapshotPlatform === 'darwin');
+	_isLinux = (MonacoSnapshotPlatform === 'linux');
+	_locale = 'en-us';
+	_language = 'en';
+	_isNative = true;
+} else if (typeof process === 'object') {
 	_isWindows = (process.platform === 'win32');
 	_isMacintosh = (process.platform === 'darwin');
 	_isLinux = (process.platform === 'linux');
@@ -69,13 +76,6 @@ if (typeof process === 'object') {
 	_isWeb = true;
 	_locale = navigator.language;
 	_language = _locale;
-} else if (typeof MonacoSnapshotPlatform === 'string') {
-	_isWindows = (MonacoSnapshotPlatform === 'win32');
-	_isMacintosh = (MonacoSnapshotPlatform === 'darwin');
-	_isLinux = (MonacoSnapshotPlatform === 'linux');
-	_locale = 'en-us';
-	_language = 'en';
-	_isNative = true;
 }
 
 export enum Platform {
