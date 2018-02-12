@@ -350,8 +350,6 @@ button {
 
 .issues-container {
 	margin-top: .5em;
-	margin-left: 1.5em;
-	padding: 3px 15px;
 	height: 108px;
 	overflow-y: auto;
 }
