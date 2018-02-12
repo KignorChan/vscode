@@ -69,7 +69,6 @@ export class IssueService implements IIssueService {
 
 		this._issueWindow.loadURL(this.getIssueReporterPath(data, features));
 
-
 		return TPromise.as(null);
 	}
 

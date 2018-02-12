@@ -366,118 +366,119 @@ export class IssueReporter extends Disposable {
 	@debounce(300)
 	private searchIssues(event: Event): void {
 		const title = (<HTMLInputElement>event.target).value;
-		if (this.features.useDuplicateSearch) {
-			this.searchDuplicates(title);
+		if (title) {
+			if (this.features.useDuplicateSearch) {
+				this.searchDuplicates(title);
+			} else {
+				this.searchGitHub(title);
+			}
 		} else {
-			this.searchGitHub(title);
+			this.clearSearchResults();
 		}
 	}
 
-	private searchDuplicates(title: string): void {
+	private clearSearchResults(): void {
 		const similarIssues = document.getElementById('similar-issues');
-		if (title) {
-			// TODO: Change to HTTPS
-			const url = 'http://vscode-probot.westus.cloudapp.azure.com:5010/duplicate_candidates';
-			const init = {
-				method: 'POST',
-				body: JSON.stringify({
-					title
-				}),
-				headers: new Headers({
-					'Content-Type': 'application/json'
-				})
-			};
+		similarIssues.innerHTML = '';
+	}
 
-			window.fetch(url, init).then((response) => {
-				response.json().then(result => {
-					similarIssues.innerHTML = '';
-					if (result && result.candidates && result.candidates.length) {
-						const normalizedResults = result.candidates.map(result => {
-							return {
-								html_url: `https://github.com/Microsoft/vscode/issues/${result.number}`,
-								title: result.title
-							};
-						});
+	private searchDuplicates(title: string): void {
+		// TODO: Change to HTTPS
+		const url = 'http://vscode-probot.westus.cloudapp.azure.com:5010/duplicate_candidates';
+		const init = {
+			method: 'POST',
+			body: JSON.stringify({
+				title
+			}),
+			headers: new Headers({
+				'Content-Type': 'application/json'
+			})
+		};
 
-						this.displaySearchResults(normalizedResults);
-					} else if (result && result.candidates) {
-						const message = $('div.list-title');
-						message.textContent = localize('noResults', "No results found");
-						similarIssues.appendChild(message);
-					} else {
-						throw new Error();
-					}
-				}).catch((error) => {
-					this.logSearchError(error);
-				});
+		window.fetch(url, init).then((response) => {
+			response.json().then(result => {
+				this.clearSearchResults();
+
+				if (result && result.candidates) {
+					const normalizedResults = result.candidates.map(result => {
+						return {
+							html_url: `https://github.com/Microsoft/vscode/issues/${result.number}`,
+							title: result.title
+						};
+					});
+
+					this.displaySearchResults(normalizedResults);
+				} else {
+					throw new Error();
+				}
 			}).catch((error) => {
 				this.logSearchError(error);
 			});
-		} else {
-			similarIssues.innerHTML = '';
-		}
+		}).catch((error) => {
+			this.logSearchError(error);
+		});
 	}
 
 	private searchGitHub(title: string): void {
 		const query = `is:issue+repo:microsoft/vscode+${title}`;
 		const similarIssues = document.getElementById('similar-issues');
-		if (title) {
-			window.fetch(`https://api.github.com/search/issues?q=${query}`).then((response) => {
-				response.json().then(result => {
-					similarIssues.innerHTML = '';
-					if (result && result.items && result.items.length) {
-						this.displaySearchResults(result.items);
-					} else if (result && result.items) {
-						const message = $('div.list-title');
-						message.textContent = localize('noResults', "No results found");
-						similarIssues.appendChild(message);
-					} else {
-						const message = $('div.list-title');
-						message.textContent = localize('rateLimited', "GitHub query limit exceeded. Please wait.");
-						similarIssues.appendChild(message);
 
-						const resetTime = response.headers.get('X-RateLimit-Reset');
-						const timeToWait = parseInt(resetTime) - Math.floor(Date.now() / 1000);
-						if (this.shouldQueueSearch) {
-							this.shouldQueueSearch = false;
-							setTimeout(() => {
-								this.searchGitHub(title);
-								this.shouldQueueSearch = true;
-							}, timeToWait * 1000);
-						}
+		window.fetch(`https://api.github.com/search/issues?q=${query}`).then((response) => {
+			response.json().then(result => {
+				similarIssues.innerHTML = '';
+				if (result && result.items) {
+					this.displaySearchResults(result.items);
+				} else {
+					// If the items property isn't present, the rate limit has been hit
+					const message = $('div.list-title');
+					message.textContent = localize('rateLimited', "GitHub query limit exceeded. Please wait.");
+					similarIssues.appendChild(message);
 
-						throw new Error(result.message);
+					const resetTime = response.headers.get('X-RateLimit-Reset');
+					const timeToWait = parseInt(resetTime) - Math.floor(Date.now() / 1000);
+					if (this.shouldQueueSearch) {
+						this.shouldQueueSearch = false;
+						setTimeout(() => {
+							this.searchGitHub(title);
+							this.shouldQueueSearch = true;
+						}, timeToWait * 1000);
 					}
-				}).catch((error) => {
-					this.logSearchError(error);
-				});
+
+					throw new Error(result.message);
+				}
 			}).catch((error) => {
 				this.logSearchError(error);
 			});
-		} else {
-			similarIssues.innerHTML = '';
-		}
+		}).catch((error) => {
+			this.logSearchError(error);
+		});
 	}
 
 	private displaySearchResults(results: SearchResult[]) {
 		const similarIssues = document.getElementById('similar-issues');
-		const issues = $('ul.issues-container');
-		const issuesText = $('div.list-title');
-		issuesText.textContent = localize('similarIssues', "Similar issues");
+		if (results.length) {
+			const issues = $('ul.issues-container');
+			const issuesText = $('div.list-title');
+			issuesText.textContent = localize('similarIssues', "Similar issues");
 
-		const numResultsToDisplay = results.length < 5 ? results.length : 5;
-		for (let i = 0; i < numResultsToDisplay; i++) {
-			const link = $('a', { href: results[i].html_url });
-			link.textContent = results[i].title;
-			link.addEventListener('click', openLink);
-			link.addEventListener('auxclick', openLink);
+			const numResultsToDisplay = results.length < 5 ? results.length : 5;
+			for (let i = 0; i < numResultsToDisplay; i++) {
+				const link = $('a', { href: results[i].html_url });
+				link.textContent = results[i].title;
+				link.addEventListener('click', (e) => this.openLink(e));
+				link.addEventListener('auxclick', (e) => this.openLink(<MouseEvent>e));
 
-			const item = $('li.issue', {}, link);
-			issues.appendChild(item);
+				const item = $('li.issue', {}, link);
+				issues.appendChild(item);
+			}
+
+			similarIssues.appendChild(issuesText);
+			similarIssues.appendChild(issues);
+		} else {
+			const message = $('div.list-title');
+			message.textContent = localize('noResults', "No results found");
+			similarIssues.appendChild(message);
 		}
-
-		similarIssues.appendChild(issuesText);
-		similarIssues.appendChild(issues);
 	}
 
 	private logSearchError(error: Error) {
@@ -675,6 +676,20 @@ export class IssueReporter extends Disposable {
 
 		target.innerHTML = `<table>${table}</table>${themeExclusionStr}`;
 	}
+
+	private openLink(event: MouseEvent): void {
+		event.preventDefault();
+		event.stopPropagation();
+		// Exclude right click
+		if (event.which < 3) {
+			shell.openExternal((<HTMLAnchorElement>event.target).href);
+
+			/* __GDPR__
+				"issueReporterViewSimilarIssue" : { }
+			*/
+			this.telemetryService.publicLog('issueReporterViewSimilarIssue');
+		}
+	}
 }
 
 // helper functions
@@ -684,13 +699,4 @@ function hide(el) {
 }
 function show(el) {
 	el.classList.remove('hidden');
-}
-
-function openLink(event: MouseEvent) {
-	event.preventDefault();
-	event.stopPropagation();
-	// Exclude right click
-	if (event.which < 3) {
-		shell.openExternal((<HTMLAnchorElement>event.target).href);
-	}
 }
